@@ -41,6 +41,15 @@ function Navbar() {
                         <IdentificationIcon className="h-5 w-5" />
                         <span>Generate ID Cards</span>
                     </NavLink>
+                    <NavLink
+                        to="/login"
+                        className={({ isActive }) =>
+                            `flex items-center space-x-2 p-2 rounded ${isActive ? 'bg-secondary' : 'hover:bg-blue-700'}`
+                        }
+                    >
+                        <IdentificationIcon className="h-5 w-5" />
+                        <span>Log in</span>
+                    </NavLink>
                 </div>
             </div>
         </motion.nav>

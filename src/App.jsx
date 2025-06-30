@@ -5,6 +5,7 @@ import Students from './pages/Students';
 import Templates from './pages/Templates';
 import TemplateEditor from './pages/TemplateEditor';
 import GenerateIDCards from './pages/GenerateIDCards';
+import Login from './pages/login';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/templates" element={<Templates />} />
           <Route path="/templates/edit/:id?" element={<TemplateEditor />} />
           <Route path="/generate" element={<GenerateIDCards />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </div>

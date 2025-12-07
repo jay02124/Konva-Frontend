@@ -1,87 +1,82 @@
+
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../utils/api';
 import TemplatePreview from '../components/TemplatePreview';
+import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-import { PencilIcon, DocumentDuplicateIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 function Templates() {
+    const navigate = useNavigate();
     const [templates, setTemplates] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
 
     useEffect(() => {
-        axios.get(`http://localhost:5000/api/templates?search=${searchQuery}`)
-            .then(response => setTemplates(response.data))
-            .catch(error => console.error('Error fetching templates:', error));
-    }, [searchQuery]);
+        fetchTemplates();
+    }, []);
 
-    const cloneTemplate = async (template) => {
+    const fetchTemplates = async () => {
         try {
-            const newTemplate = { ...template, name: `${template.name} (Copy)` };
-            delete newTemplate._id;
-            await axios.post('http://localhost:5000/api/templates', newTemplate);
-            const response = await axios.get('http://localhost:5000/api/templates');
+            const response = await api.get('/api/templates');
             setTemplates(response.data);
-        } catch (error) {
-            console.error('Error cloning template:', error);
+        } catch (err) {
+            setError('Failed to load templates: ' + err.message);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this template?')) {
+            try {
+                await api.delete(`/api/templates/${id}`);
+                setSuccess('Template deleted successfully');
+                fetchTemplates();
+            } catch (err) {
+                setError('Failed to delete template: ' + err.message);
+            }
         }
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-        >
-            <h1 className="text-3xl font-bold mb-6">Templates</h1>
-            <div className="mb-4">
-                <input
-                    type="text"
-                    placeholder="Search templates..."
-                    className="w-full max-w-md p-2 border rounded bg-white shadow-sm"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-            <Link to="/templates/edit" className="bg-primary text-white p-2 rounded hover:bg-blue-700 mb-4 inline-block">
-                Create New Template
-            </Link>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="max-w-7xl mx-auto p-6">
+            <h1 className="text-2xl font-bold mb-4 text-gray-800">Manage Templates</h1>
+            {error && <div className="text-red-600 mb-4">{error}</div>}
+            {success && <div className="text-green-600 mb-4">{success}</div>}
+            <button
+                className="bg-[#1d4ed8] text-white p-2 rounded hover:bg-[#2563eb] flex items-center mb-4"
+                onClick={() => navigate('/editor')}
+            >
+                <PlusIcon className="h-5 w-5 mr-1" /> Create New Template
+            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {templates.map(template => (
                     <motion.div
                         key={template._id}
-                        className="bg-white p-4 rounded-lg shadow-md"
-                        whileHover={{ scale: 1.02 }}
+                        className="bg-white rounded-lg shadow-lg p-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
                     >
-                        <TemplatePreview template={template} />
-                        <h3 className="text-lg font-semibold mt-2">{template.name}</h3>
-                        <div className="flex space-x-2 mt-2">
-                            <Link
-                                to={`/templates/edit/${template._id}`}
-                                className="flex items-center text-primary hover:text-blue-700"
-                            >
-                                <PencilIcon className="h-5 w-5 mr-1" />
-                                Edit
-                            </Link>
+                        <h2 className="text-lg font-semibold mb-2 text-gray-800">{template.name}</h2>
+                        <TemplatePreview template={template} width={300} height={200} />
+                        <div className="flex space-x-2 mt-4">
                             <button
-                                className="flex items-center text-yellow-500 hover:text-yellow-700"
-                                onClick={() => cloneTemplate(template)}
+                                className="bg-[#1d4ed8] text-white p-2 rounded hover:bg-[#2563eb] flex items-center"
+                                onClick={() => navigate(`/editor/${template._id}`)}
                             >
-                                <DocumentDuplicateIcon className="h-5 w-5 mr-1" />
-                                Clone
+                                <PencilIcon className="h-5 w-5 mr-1" /> Edit
                             </button>
-                            <Link
-                                to={`/templates/edit/${template._id}?view=true`}
-                                className="flex items-center text-gray-500 hover:text-gray-700"
+                            <button
+                                className="bg-red-600 text-white p-2 rounded hover:bg-red-700 flex items-center"
+                                onClick={() => handleDelete(template._id)}
                             >
-                                <EyeIcon className="h-5 w-5 mr-1" />
-                                View
-                            </Link>
+                                <TrashIcon className="h-5 w-5 mr-1" /> Delete
+                            </button>
                         </div>
                     </motion.div>
                 ))}
             </div>
-        </motion.div>
+        </div>
     );
 }
 

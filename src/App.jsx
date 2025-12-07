@@ -1,26 +1,89 @@
+
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Students from './pages/Students';
-import Templates from './pages/Templates';
-import TemplateEditor from './pages/TemplateEditor';
-import GenerateIDCards from './pages/GenerateIDCards';
 import Login from './pages/login';
+import TemplateEditor from './pages/TemplateEditor';
+import Templates from './pages/Templates';
+import Students from './pages/Students';
+import GenerateIDCards from './pages/GenerateIDCards';
+import './App.css';
+
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" />;
+}
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 font-inter">
-      <Navbar />
-      <div className="container mx-auto p-6">
+
+      <div className="min-h-screen bg-gray-100">
         <Routes>
-          <Route path="/" element={<Students />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/templates/edit/:id?" element={<TemplateEditor />} />
-          <Route path="/generate" element={<GenerateIDCards />} />
           <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <div>
+                  <Navbar />
+                  <Templates />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/templates"
+            element={
+              <ProtectedRoute>
+                <div>
+                  <Navbar />
+                  <Templates />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/editor"
+            element={
+              <ProtectedRoute>
+                <TemplateEditor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/editor/:id"
+            element={
+              <ProtectedRoute>
+                <TemplateEditor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/students"
+            element={
+              <ProtectedRoute>
+                <div>
+                  <Navbar />
+                  <Students />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/generate"
+            element={
+              <ProtectedRoute>
+                <div>
+                  <Navbar />
+                  <GenerateIDCards />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </div>
-    </div>
+
   );
 }
 
